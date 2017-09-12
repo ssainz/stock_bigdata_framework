@@ -18,7 +18,7 @@ def getQuotes(symbol):
 
         # print out some quote data
         to_kafka = {
-            'LastTradeWithCurrency': fin_data['op'].encode('ascii', 'ignore'),
+            'LastTradeWithCurrency': fin_data['l'].encode('ascii', 'ignore'),
             'LastTradeDateTime': last_trade_date_time,
             'StockSymbol': fin_data['symbol'].encode('ascii', 'ignore')
         }
@@ -26,4 +26,4 @@ def getQuotes(symbol):
 
 
 if __name__ == '__main__':
-    print(getQuotes('MSTR'))
+    print(getQuotes('MSTR,'))
