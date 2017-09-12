@@ -3,7 +3,7 @@
 # run example: python kafka_data_ingestion.py CMCSA stock_analyzer 192.168.99.100:9092
 # @param $1 - "symbol of the stock", $2 - "kafka topic name", $3 "docker machine ip : kafka port"
 
-from googlefinance import getQuotes
+from googlefinance_reader import getQuotes
 from kafka import KafkaProducer
 from kafka.errors import KafkaError
 
