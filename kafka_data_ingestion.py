@@ -6,7 +6,9 @@
 from googlefinance_reader import getQuotes
 from kafka import KafkaProducer
 from kafka.errors import KafkaError
+from kafka.errors import KafkaTimeoutError
 from time import gmtime, strftime
+
 
 import argparse
 import atexit
@@ -85,9 +87,11 @@ if __name__ == '__main__':
 
     # initiate a kafka producer
     producer = KafkaProducer(
-        bootstrap_servers=kafka_broker
+        bootstrap_servers=kafka_broker,
+        request_timeout_ms=40000
     )
-    symbols = ['MSTR', 'DATA']
+    #symbols = ['MSTR’,'DATA','WMT','AAPL','XOM','MCK','UNH','CVS','GM','T','F','ABC','AMZN','GE','VZ','CAH','COST','WBA','KR','CVX','FNMA','JPM','ESRX','HD','BA','WFC','BAC','GOOGL','MSFT','ANTM','C','CMCSA','IBM','IBM','PSX','JNJ','PG','VLO','TGT','FMCC','LOW','LOW','MET','AET','PEP','ADM','UPS','INTC','PRU','PRU','UTX','MPC','DIS','HUM','PFE','AIG','LMT','SYY','FDX','HPE','CSCO','HPQ','DOW','HCA','KO','KO','CNC','AAL','AAL','MRK','CI','DAL','BBY','HON','CAT','CAT','MS','MS','GS','ETE','ETE','ORCL','TSN','UAL','ALL','ALL','AXP','TJX','NKE','EXC','GD','RAD','GILD','GILD','MMM','TWX','CHTR','CHTR','FB','TRV','COF','FOXA','FOXA','INT','PM','DE','KHC','TECD','AVT','MDLZ','M','ABBV','MCD','DD','NOC','COP','RTN','TSO','ARW','QCOM','PGR','DUK','EPD','AMGN','USFD','USB','AFL','SHLD','DG','AN','CYH','SBUX','LLY','IP','THC','ABT','DLTR','WHR','LUV','EMR','SPLS','PAGP','PAG','UNP','DHR','SO','MAN','BMY','MO','FLR','KSS','LEA','JBL','HIG','TMO','KMB','MOH','PCG','SVU','CMI','CTL','ACM','XRX','MAR','PCAR','GIS','PNC','AEP','IEP','NUE','NEE','PFGC','PBF','HAL','KMX','FCX','WFM','BK','GPS','OMC','GPC','DVA','CL','PPG','GT','SYF','DISH','V','JWN','INTL','WRK','XPO','ARMK','CBS','AES','WCG','FE','CAG','SNX','CDW','TXT','WM','ITW','ODP','MON','CTSH','TXN','LNC','NWL','NWL','MMC','ECL','CHRW','L','CBG','KMI','K','WDC','WDC','ROST','LB','JCP','JCP','RAI','VIAB','BDX','MU','PFG','ARNC','NRG','VFC','DVN','DHI','BBBY','ED','EIX','SHW','NGL','D','AMP','ADP','HLT','FDC','HSIC','HSIC','BBT','RGA','CORE','BIIB','LVS','SWK','PH','SYK','EL','CELG','BLK','XEL','CSX','UNM','JEC','LEN','GPI','LUK','ETR','PYPL','AMAT','VOYA','MA','QVCA','AZO','STT','DTE','LLL','HFC','PX','UHS','DFS','OXY','X','SRE','BAX','GWW','ALV','NSC','BHI','ALLY','SAH','OMI','HUN','LH','MUSA','AAP','FNF','APD','HRL','HTZ','MGM','GLW','RSG','AA','FIS','FIS','STI','LKQ','BWA','BLL','CST','PEG','EMN','EBAY','MHK','OKE','FTR','NFLX','NFLX','NFLX','EXPE','LAD','CAR','RS','GME','TEN','ORLY','ORLY','UNFI','CRM','BSX','NEM','GNW','LYV','VRTV','NWSA','CCK','GLP','PVH','LVLT','NAV','UNVR','CPB','DKS','WY','WY','CHK','APC','IPG','SJM','STLD','FL','FL','SPTN','DF','ZBH','PHM','WRB','PWR','EOG','SCHW','ES','AXE','EME','AIZ','CNP','HRS','HDS','PPL','DGX','WMB','WEC','HSY','AGCO','RL','MAS','WCC','LPNT','NOV','KND','MOS','ADS','ADS','HII','LDOS','LDOS','TSLA','ASNA','DRI','DRI','NVDA','RRD','FITB','Q','JLL','DOV','SPR','R','AMRK','TSCO','SEE','SEE','YUMC','CPN','OI','TRGP','JBLU','JBLU','BEN','ATVI','JBHT','STZ','NCR','ABG','AFG','DISCA','BERY','SANM','CAA','DPS','DDS','HRG','CMS','CMS','BLDR','YUM','CASY','APH','OSK','IHRT','THS','Y','EXPD','AVY','AEE','HBI','MSI','MSI','HOG','RF','ICE','ALK','ORI','LRCX','AKS','ROK','ADBE','AVP','TEX','DAN','RLGY','AMT','PKG','CFG','URI','CLX','GEN','MTB','INGR','UGI','OC','SPGI','WYN','AJG','BURL','FAF','SYMC','PDCO','OLN','NTAP','RJF','TA','FISV','HST','NSIT','MAT','AFSI','CINF','SPG','WU','KEY','DK','BAH','CC','CC','CE','WIN','SEB','ESND','APA','APA','KELYA','LSXMA','RHI']
+    symbols = ['MSTR', 'DATA', 'GS', 'JNPR', 'WMT','AAPL','XOM','MCK','UNH','CVS','GM','T','F','ABC','AMZN','GE','VZ','CAH','COST','WBA','KR', 'CVX','FNMA','JPM','ESRX','HD','BA','WFC','BAC','GOOGL','MSFT','ANTM','C','CMCSA','IBM','IBM','PSX','JNJ','PG','VLO','TGT','FMCC','LOW','LOW','MET','AET','PEP','ADM','UPS','INTC','PRU','PRU','UTX','MPC','DIS','HUM','PFE','AIG','LMT','SYY','FDX','HPE','CSCO','HPQ','DOW','HCA','KO','KO','CNC','AAL','AAL','MRK','CI','DAL','BBY','HON','CAT','CAT','MS','MS','GS','ETE','ETE','ORCL','TSN','UAL','ALL','ALL','AXP','TJX','NKE','EXC','GD','RAD','GILD','GILD','MMM','TWX','CHTR','CHTR','FB','TRV','COF','FOXA','FOXA','INT','PM','DE','KHC','TECD','AVT','MDLZ','M','ABBV','MCD','DD','NOC','COP','RTN','TSO','ARW','QCOM','PGR','DUK','EPD','AMGN','USFD','USB','AFL','SHLD','DG','AN','CYH','SBUX','LLY','IP','THC','ABT','DLTR','WHR','LUV','EMR','SPLS','PAGP','PAG','UNP','DHR','SO','MAN','BMY','MO','FLR','KSS','LEA','JBL','HIG','TMO','KMB','MOH','PCG','SVU','CMI','CTL','ACM','XRX','MAR’]
     schedule.every(1).second.do(fetch_price_for_all_symbols, producer, symbols)
 
     atexit.register(shutdown_hook, producer)
