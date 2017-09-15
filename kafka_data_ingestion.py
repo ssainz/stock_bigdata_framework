@@ -6,6 +6,7 @@
 from googlefinance_reader import getQuotes
 from kafka import KafkaProducer
 from kafka.errors import KafkaError
+from time import gmtime, strftime
 
 import argparse
 import atexit
@@ -15,7 +16,7 @@ import logging
 import schedule
 
 
-def fetch_price(producer, symbol):
+def fetch_price(producer, symbol, str_time):
     """
     helper function to get stock data and send to kafka
     @param producer - instance of a kafka producer
@@ -24,7 +25,7 @@ def fetch_price(producer, symbol):
     """
     logger.debug('Start to fetch stock price for %s', symbol)
     try:
-        price = json.dumps(getQuotes(symbol))
+        price = json.dumps(getQuotes(symbol, str_time))
         logger.debug('Get stock info %s', price)
         producer.send(topic = topic_name, value = price, timestamp_ms = time.time())
         logger.debug('Sent stock price for %s to kafka', symbol)
@@ -74,8 +75,11 @@ if __name__ == '__main__':
     producer = KafkaProducer(
         bootstrap_servers = kafka_broker
     )
+    symbols=['MSTR', 'DATA']
+    for symbol in symbols:
+        str_time_now = strftime("%Y-%m-%dT%H:%M:%SZ", gmtime())
+        schedule.every(1).second.do(fetch_price, producer, symbol, str_time_now)
 
-    schedule.every(1).second.do(fetch_price, producer, symbol)
 
     atexit.register(shutdown_hook, producer)
 
