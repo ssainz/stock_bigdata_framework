@@ -5,12 +5,21 @@
 
 from googlefinance_reader import getQuotes
 from kafka import KafkaProducer
+from kafka.errors import KafkaError
 from time import gmtime, strftime
 
 import argparse
+import atexit
 import json
 import time
 import logging
+import schedule
+
+
+def fetch_price_for_all_symbols(producer, symbols):
+    str_time_now = strftime("%Y-%m-%dT%H:%M:%SZ", gmtime())
+    for symbol in symbols:
+        fetch_price(producer, symbol, str_time_now)
 
 
 def fetch_price(producer, symbol, str_time):
@@ -70,14 +79,14 @@ if __name__ == '__main__':
 
     # initiate a kafka producer
     producer = KafkaProducer(
-        bootstrap_servers = kafka_broker
+        bootstrap_servers=kafka_broker
     )
+    symbols = ['MSTR', 'DATA']
+    schedule.every(1).second.do(fetch_price_for_all_symbols, producer, symbols)
 
+    atexit.register(shutdown_hook, producer)
 
     # setup proper shutdown_hook
-    symbols=['MSTR', 'DATA']
     while True:
-        str_time_now = strftime("%Y-%m-%dT%H:%M:%SZ", gmtime())
-        for symbol in symbols:
-            fetch_price(producer, symbol, str_time_now)
+        schedule.run_pending()
         time.sleep(1)
