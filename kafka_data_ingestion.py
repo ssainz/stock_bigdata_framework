@@ -14,13 +14,19 @@ import json
 import time
 import logging
 import schedule
-
+import threading
 
 def fetch_price_for_all_symbols(producer, symbols):
     str_time_now = strftime("%Y-%m-%dT%H:%M:%SZ", gmtime())
+    threads = []
     for symbol in symbols:
-        fetch_price(producer, symbol, str_time_now)
+        t = threading.Thread(name='worker %s' % symbol, target=fetch_price, args=(producer, symbol, str_time_now))
+        threads.append(t)
+        t.start()
+        #fetch_price(producer, symbol, str_time_now)
 
+    for t in threads:
+        t.join()
 
 def fetch_price(producer, symbol, str_time):
     """
